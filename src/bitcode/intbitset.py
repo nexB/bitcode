@@ -1,15 +1,30 @@
+# Copyright (c) nexB Inc. and others. All rights reserved.
+# ahocode is a trademark of nexB Inc.
+# SPDX-License-Identifier: Apache-2.0
+# See http://www.apache.org/licenses/LICENSE-2.0 for the license text.
+# See https://github.com/nexB/ahocode for support or download.
+# See https://aboutcode.org for more information about nexB OSS projects.
+
 CFG_INTBITSET_ENABLE_SANITY_CHECKS = True
 
 
 class intbitset:
-    def __init__(self, rhs=0, preallocate=-1, trailing_bits=0, sanity_checks=CFG_INTBITSET_ENABLE_SANITY_CHECKS,
+    def __init__(self, rhs=None, preallocate=-1, trailing_bits=0, sanity_checks=CFG_INTBITSET_ENABLE_SANITY_CHECKS,
                  no_allocate=0):
-        self.rhs = rhs
+        self.bitset = 0
+
+        if isinstance(rhs, int):
+            self.bitset = rhs
+        elif isinstance(rhs, intbitset):
+            self.bitset = rhs.bitset
+        elif isinstance(rhs, (list, set, frozenset)):
+            for value in rhs:
+                self.add(value)
+
         self.preallocate = preallocate
         self.trailing_bits = trailing_bits
         self.sanity_checks = sanity_checks
         self.no_allocate = no_allocate
-        self.bitset = 0
 
     def add(self, value):
         """
@@ -88,12 +103,15 @@ class intbitset:
         """ Update an intbitset with the symmetric difference of itself and another. """
         self.bitset ^= other.bitset
 
-    def tolist(self, *args, **kwargs):
+    def tolist(self):
         """
         Legacy method to retrieve a list of all the elements inside an
                 intbitset.
         """
-        pass
+        elements = []
+        for element in self:
+            elements = [element] + elements
+        return elements
 
     def union(self, *args):
         """ Return a new intbitset with elements from the intbitset and all others. """
@@ -123,6 +141,10 @@ class intbitset:
         for other in args:
             self.bitset &= other.bitset
 
+    def update(self, *args, **kwargs):
+        """ Update the intbitset, adding elements from all others. """
+        pass
+
     def __and__(self, other):
         """
             Return the intersection of two intbitsets as a new set.
@@ -132,10 +154,30 @@ class intbitset:
         new.bitset = self.bitset & other.bitset
         return new
 
+    def __eq__(self, other):
+        """ Return self==value. """
+        return self.bitset == other.bitset
+
     def __contains__(self, key):
         """ Return key in self. """
         key_bit = 1 << key
         return key_bit & self.bitset == key_bit
+
+    def __len__(self):
+        """ Return len(self). """
+        return len(bin(self.bitset)) - 2
+
+    def __iter__(self):
+        """ Implement iter(self). """
+        bits = bin(self.bitset)[2:]
+        size = len(bits)
+        for bit in bits:
+            if bit == "1":
+                yield size
+            size -= 1
+
+    def __hash__(self):
+        return self.bitset
 
     def __str__(self):
         binary = bin(self.bitset)[2:]
@@ -147,5 +189,6 @@ class intbitset:
                 if n > 0:
                     ans += ", "
             n -= 1
+        ans = ans.rstrip(', ')
         ans += "])"
         return ans
