@@ -1,9 +1,11 @@
+#
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # bitcode is a trademark of nexB Inc.
 # SPDX-License-Identifier: Apache-2.0
 # See http://www.apache.org/licenses/LICENSE-2.0 for the license text.
 # See https://github.com/nexB/bitcode for support or download.
 # See https://aboutcode.org for more information about nexB OSS projects.
+#
 
 CFG_INTBITSET_ENABLE_SANITY_CHECKS = True
 
