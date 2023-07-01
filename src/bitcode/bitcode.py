@@ -1,10 +1,8 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # bitcode is a trademark of nexB Inc.
-
 # SPDX-License-Identifier: Apache-2.0
 # See http://www.apache.org/licenses/LICENSE-2.0 for the license text.
 # See https://github.com/nexB/bitcode for support or download.
-
 # See https://aboutcode.org for more information about nexB OSS projects.
 
 CFG_INTBITSET_ENABLE_SANITY_CHECKS = True
@@ -43,18 +41,20 @@ class intbitset:
     def copy(self):
         """ Return a shallow copy of a set. """
         new = intbitset()
-        intbitset.bitset = self.bitset
+        new.bitset = self.bitset
         return new
 
-    def difference(self, other):
+    def difference(self, *args):
         """ Return a new intbitset with elements from the intbitset that are not in the others. """
-        new = intbitset()
-        new.bitset = (self.bitset ^ other.bitset) & self.bitset
+        new = intbitset(self.bitset)
+        for other in args:
+            new.bitset = (new.bitset ^ other.bitset) & self.bitset
         return new
 
-    def difference_update(self, other):
+    def difference_update(self, *args):
         """ Update the intbitset, removing elements found in others. """
-        self.bitset &= (self.bitset ^ other.bitset)
+        for other in args:
+            self.bitset &= (self.bitset ^ other.bitset)
 
     def discard(self, value):
         """
@@ -82,7 +82,7 @@ class intbitset:
         """
         initial_bitset = self.bitset
         self.discard(key)
-        if initial_bitset != self.bitset:
+        if initial_bitset == self.bitset:
             raise KeyError(f"{key} not in bitset")
 
     def strbits(self):
@@ -124,7 +124,7 @@ class intbitset:
         new.bitset = bitset
         return new
 
-    def union_update(self, *args):  # real signature unknown
+    def union_update(self, *args):
         """ Update the intbitset, adding elements from all others. """
         for other in args:
             self.bitset |= other.bitset
@@ -142,10 +142,6 @@ class intbitset:
         """ Update the intbitset, keeping only elements found in it and all others. """
         for other in args:
             self.bitset &= other.bitset
-
-    def update(self, *args, **kwargs):
-        """ Update the intbitset, adding elements from all others. """
-        pass
 
     def __and__(self, other):
         """
@@ -167,12 +163,14 @@ class intbitset:
 
     def __len__(self):
         """ Return len(self). """
-        return len(bin(self.bitset)) - 2
+        binary = bin(self.bitset)
+        size = len(binary) - 2
+        return (size - 2, size - 1)[binary[-1] != '0']
 
     def __iter__(self):
         """ Implement iter(self). """
         bits = bin(self.bitset)[2:]
-        size = len(bits)
+        size = len(bits) - 1
         for bit in bits:
             if bit == "1":
                 yield size
