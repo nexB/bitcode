@@ -173,7 +173,6 @@ class intbitset:
         bitset = self.bitset
         size = 0
         while bitset != 0:
-            print(bitset)
             size += bitset & 1
             bitset >>= 1
         return size

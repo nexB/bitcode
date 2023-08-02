@@ -122,8 +122,8 @@ class TestBitsetMethods(unittest.TestCase):
         self.assertEqual(sorted(A.tolist()), sorted(self.values))
 
     def test_len(self):
-        A = self.A
-        self.assertEqual(len(A), len(self.values))
+        A = intbitset([100, 200, 300, 1])
+        self.assertEqual(len(A), len([100, 200, 300, 1]))
 
     def test_print(self):
         A = self.A
@@ -135,3 +135,22 @@ class TestBitsetMethods(unittest.TestCase):
         self.assertEqual(3 not in A, True)
         self.assertEqual(A.__contains__(1), True)
         self.assertEqual(A.__contains__(99), False)
+
+    def test_bitwise_or(self):
+        A = self.A
+        new_val = [1, 50, 44, 757, 11]
+        new = intbitset(new_val)
+        expected = intbitset(self.values + new_val)
+        self.assertEqual(A | new, expected)
+
+    def test_bitwise_and(self):
+        A = self.A
+        new_val = [1, 50, 44, 5, 11]
+        new = intbitset(new_val)
+        expected = intbitset([5, 1])
+        self.assertEqual(A & new, expected)
+
+    def test_getitem(self):
+        A = self.A
+        self.assertEqual(A[3], 4)
+        self.assertEqual(A[0], 0)
