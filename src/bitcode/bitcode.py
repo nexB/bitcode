@@ -19,7 +19,7 @@ class intbitset:
             self.bitset = rhs
         elif isinstance(rhs, intbitset):
             self.bitset = rhs.bitset
-        elif isinstance(rhs, (list, set, frozenset)):
+        elif isinstance(rhs, (list, set, frozenset, range, tuple)):
             for value in rhs:
                 self.add(value)
 
@@ -154,6 +154,11 @@ class intbitset:
         new.bitset = self.bitset & other.bitset
         return new
 
+    def __or__(self, other):
+        new = intbitset()
+        new.bitset = self.bitset | other.bitset
+        return new
+
     def __eq__(self, other):
         """ Return self==value. """
         return self.bitset == other.bitset
@@ -165,9 +170,12 @@ class intbitset:
 
     def __len__(self):
         """ Return len(self). """
-        binary = bin(self.bitset)
-        size = len(binary) - 2
-        return (size - 2, size - 1)[binary[-1] != '0']
+        bitset = self.bitset
+        size = 0
+        while bitset != 0:
+            size += bitset & 1
+            bitset >>= 1
+        return size
 
     def __iter__(self):
         """ Implement iter(self). """
@@ -194,3 +202,13 @@ class intbitset:
         ans = ans.rstrip(', ')
         ans += "])"
         return ans
+
+    def __getitem__(self, item):
+
+        elements = []
+        for element in self:
+            elements = [element] + elements
+        n = len(elements)
+        if item >= n:
+            raise IndexError("Sequence index out of range")
+        return elements[item]
