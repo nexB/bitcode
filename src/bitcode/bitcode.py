@@ -49,7 +49,6 @@ class intbitset:
     def difference(self, *args):
         """ Return a new intbitset with elements from the intbitset that are not in the others. """
         new = intbitset()
-        print(*args)
         new.bitset = self.bitset.difference(*args)
         return new
 
