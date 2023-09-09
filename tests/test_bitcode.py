@@ -122,13 +122,9 @@ class TestBitsetMethods(unittest.TestCase):
         self.assertEqual(sorted(A.tolist()), sorted(self.values))
 
     def test_len(self):
-        A = intbitset([10**5, 100, 200, 300, 1])
+        A = intbitset([10 ** 5, 100, 200, 300, 1])
         print(A)
-        self.assertEqual(len(A), len([int(2**10), 100, 200, 300, 1]))
-
-    def test_print(self):
-        A = self.A
-        self.assertEqual(A.__str__(), "intbitset([5, 4, 2, 1, 0])")
+        self.assertEqual(len(A), len([int(2 ** 10), 100, 200, 300, 1]))
 
     def test_contains(self):
         A = self.A

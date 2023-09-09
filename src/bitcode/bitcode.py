@@ -66,7 +66,7 @@ class intbitset:
 
     def isdisjoint(self, other):
         """ Return True if two intbitsets have a null intersection. """
-        return self.intersection(*[other]).bitset == 0
+        return self.bitset.isdisjoint(other.bitset)
 
     def issuperset(self, other):
         """ Report whether this set contains another set. """
@@ -83,12 +83,18 @@ class intbitset:
         """
         self.bitset.remove(key)
 
-    # def strbits(self):
-    #     """
-    #     Return a string of 0s and 1s representing the content in memory
-    #             of the intbitset.
-    #     """
-    #     return bin(self.bitset)[2:]
+    def strbits(self):
+        """
+        Return a string of 0s and 1s representing the content in memory
+                of the intbitset.
+        """
+        new = self.bitset
+        if len(new) == 0:
+            return ""
+        res = ["0"] * (max(new) + 1)
+        for _ in new:
+            res[_] = "1"
+        return ''.join(res)
 
     def symmetric_difference(self, other):
         """
@@ -130,6 +136,15 @@ class intbitset:
         """ Update the intbitset, keeping only elements found in it and all others. """
         self.bitset.intersection_update(*args)
 
+    def pop(self):
+        sorted_lis = sorted(self.bitset)
+        try:
+            poped = sorted_lis.pop()
+        except IndexError:
+            raise KeyError
+        self.bitset = set(sorted_lis)
+        return poped
+
     def __and__(self, other):
         """
             Return the intersection of two intbitsets as a new set.
@@ -158,17 +173,58 @@ class intbitset:
 
     def __iter__(self):
         """ Implement iter(self). """
-        return iter(self.bitset)
+        return iter(sorted(self.bitset))
 
     def __str__(self):
         ans = "intbitset(["
-        for char in self.bitset:
+        for char in sorted(self.bitset):
             ans += str(char) + ", "
+        ans.rstrip(", ")
         ans += "])"
         return ans
 
     def __getitem__(self, item):
+        sorted_list = sorted(list(self.bitset))
+        if isinstance(item, slice):
+            indices = range(*item.indices(len(sorted_list)))
+            return [sorted_list[i] for i in indices]
         n = len(self.bitset)
         if item >= n:
             raise IndexError("Sequence index out of range")
-        return sorted(list(self.bitset))[item]
+        return sorted_list[item]
+
+    def __iand__(self, other):
+        self.bitset = self.bitset & other.bitset
+
+    def __ior__(self, other):
+        self.bitset = self.bitset | other.bitset
+
+    def __xor__(self, other):
+        new = intbitset()
+        new.bitset = self.bitset ^ other.bitset
+        return new
+
+    def __ixor__(self, other):
+        self.bitset = self.bitset ^ other.bitset
+
+    def __sub__(self, other):
+        new = intbitset()
+        if other == None:
+            raise TypeError("operands must be an intbitset")
+        new.bitset = self.bitset - other.bitset
+        return new
+
+    def __isub__(self, other):
+        self.bitset = self.bitset - other.bitset
+
+    def __ge__(self, other):
+        return set.__ge__(self.bitset, other.bitset)
+
+    def __gt__(self, other):
+        return set.__gt__(self.bitset, other.bitset)
+
+    def __le__(self, other):
+        return set.__le__(self.bitset, other.bitset)
+
+    def __lt__(self, other):
+        return set.__lt__(self.bitset, other.bitset)
