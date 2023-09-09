@@ -34,30 +34,6 @@ def b(s):
     return s.encode("latin-1")
 
 
-# def check_bitset(intbitset1, msg=""):
-#     """
-#     Run basic sanity checks on a bitset
-#     """
-#     wordbitsize = intbitset1.get_wordbitsize()
-#     size1 = intbitset1.get_size()
-#     allocated1 = intbitset1.get_allocated()
-#     creator_list = intbitset1.extract_finite_list()
-#     up_to1 = creator_list and max(creator_list) or -1
-#     assert up_to1 <= size1 * wordbitsize < allocated1 * wordbitsize, (
-#         "up_to1=%s, size1=%s, allocated1=%s while testing %s during %s"
-#         % (up_to1, size1 * wordbitsize, allocated1 * wordbitsize, intbitset1, msg),
-#     )
-#     tmp = intbitset(intbitset1.fastdump())
-#     size2 = tmp.get_size()
-#     allocated2 = tmp.get_allocated()
-#     creator_list = tmp.extract_finite_list()
-#     up_to2 = creator_list and max(creator_list) or -1
-#     assert up_to2 <= size2 * wordbitsize < allocated2 * wordbitsize, (
-#         "After serialization up_to2=%s, size2=%s, allocated2=%s while testing %s during %s"
-#         % (up_to2, size2 * wordbitsize, allocated2 * wordbitsize, intbitset1, msg),
-#     )
-
-
 TEST_SETS = [
     [1024],
     [10, 20],
