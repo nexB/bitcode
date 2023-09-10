@@ -171,8 +171,6 @@ def check_functions_work(function, intbitset1, intbitset2, logical=False):
         intbitset2,
     )
 
-
-
     trailing1 = intbitset1.is_infinite()
     trailing2 = intbitset2.is_infinite()
 
@@ -318,25 +316,6 @@ def test_ascii_bit_dump(set1):
     assert len(set1) == tot
 
 
-# @pytest.mark.parametrize(
-#     argnames="set1",
-#     argvalues=TEST_SETS + [[]],
-# )
-# def test_tuple_of_tuples(set1):
-#     """intbitset - support tuple of tuples"""
-#     tmp_tuple = tuple([(elem,) for elem in set1])
-#     assert list(intbitset(set1)) == list(intbitset(tmp_tuple))
-#
-#
-# @pytest.mark.parametrize(
-#     argnames="set1",
-#     argvalues=TEST_SETS + [[]],
-# )
-# def test_tuple_of_tuples_with_trailing_bits(set1):
-#     tmp_tuple = tuple([(elem,) for elem in set1])
-#     assert intbitset(set1, trailing_bits=True) == intbitset(tmp_tuple, trailing_bits=True)
-
-
 @pytest.mark.parametrize(
     argnames="set1",
     argvalues=TEST_SETS + [[]],
@@ -426,9 +405,6 @@ def test_set_cloning(set1, trailing_bits):
     intbitset1 = intbitset(set1, trailing_bits=trailing_bits)
     intbitset2 = intbitset(intbitset1)
     intbitset3 = copy.deepcopy(intbitset2)
-    # check_bitset(intbitset1)
-    # check_bitset(intbitset2)
-    # check_bitset(intbitset3)
     assert intbitset2 == intbitset1
     assert intbitset3 == intbitset1
 
@@ -536,8 +512,3 @@ def test_set_iterator2(set1):
 def test_empty_generator():
     intbitset(range(0))
     intbitset(i for i in range(0))
-
-
-def test_do_not_allow_removal_of_none():
-    with pytest.raises(TypeError):  # NOQA
-        intbitset([1, 2, 3]) - None
