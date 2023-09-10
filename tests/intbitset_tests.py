@@ -64,6 +64,7 @@ TEST_SETS = [
 
 class Function(NamedTuple):
     intbitset_function: str
+    intbitset_logical_function: str
     set_function: str
     int_function: str
     label: str
@@ -71,7 +72,8 @@ class Function(NamedTuple):
 
 
 AND_FUNC = Function(
-    intbitset_function=intbitset.__and__,  # NOQA
+    intbitset_function=intbitset.intersection,  # NOQA
+    intbitset_logical_function=intbitset.__and__,  # NOQA
     set_function=set.__and__,
     int_function=int.__and__,
     label="intersection",
@@ -79,7 +81,8 @@ AND_FUNC = Function(
 )
 
 IAND_FUNC = Function(
-    intbitset_function=intbitset.__iand__,  # NOQA
+    intbitset_function=intbitset.intersection_update,  # NOQA
+    intbitset_logical_function=intbitset.__iand__,  # NOQA
     set_function=set.__iand__,
     int_function=int.__and__,
     label="intersection_update",
@@ -87,7 +90,8 @@ IAND_FUNC = Function(
 )
 
 OR_FUNC = Function(
-    intbitset_function=intbitset.__or__,  # NOQA
+    intbitset_function=intbitset.union,  # NOQA
+    intbitset_logical_function=intbitset.__or__,  # NOQA
     set_function=set.__or__,
     int_function=int.__or__,
     label="union",
@@ -95,7 +99,8 @@ OR_FUNC = Function(
 )
 
 IOR_FUNC = Function(
-    intbitset_function=intbitset.__ior__,  # NOQA
+    intbitset_function=intbitset.union_update,  # NOQA
+    intbitset_logical_function=intbitset.__ior__,  # NOQA
     set_function=set.__ior__,
     int_function=int.__or__,
     label="union_update",
@@ -103,7 +108,8 @@ IOR_FUNC = Function(
 )
 
 XOR_FUNC = Function(
-    intbitset_function=intbitset.__xor__,  # NOQA
+    intbitset_function=intbitset.symmetric_difference,  # NOQA
+    intbitset_logical_function=intbitset.__xor__,  # NOQA
     set_function=set.__xor__,
     int_function=int.__xor__,
     label="symmetric_difference",
@@ -111,7 +117,8 @@ XOR_FUNC = Function(
 )
 
 IXOR_FUNC = Function(
-    intbitset_function=intbitset.__ixor__,  # NOQA
+    intbitset_function=intbitset.symmetric_difference_update,  # NOQA
+    intbitset_logical_function=intbitset.__ixor__,  # NOQA
     set_function=set.__ixor__,
     int_function=int.__xor__,
     label="symmetric_difference_update",
@@ -119,7 +126,8 @@ IXOR_FUNC = Function(
 )
 
 SUB_FUNC = Function(
-    intbitset_function=intbitset.__sub__,  # NOQA
+    intbitset_function=intbitset.difference,  # NOQA
+    intbitset_logical_function=intbitset.__sub__,  # NOQA
     set_function=set.__sub__,
     int_function=int.__sub__,
     label="difference",
@@ -127,7 +135,8 @@ SUB_FUNC = Function(
 )
 
 ISUB_FUNC = Function(
-    intbitset_function=intbitset.__isub__,  # NOQA
+    intbitset_function=intbitset.difference_update,  # NOQA
+    intbitset_logical_function=intbitset.__isub__,  # NOQA
     set_function=set.__isub__,
     int_function=int.__sub__,
     label="difference_update",
@@ -144,6 +153,140 @@ FUNCTIONS = [
     XOR_FUNC,
     IXOR_FUNC,
 ]
+
+
+def check_functions_work(function, intbitset1, intbitset2, logical=False):
+    function = function
+    orig1 = intbitset(intbitset1)
+    orig2 = intbitset(intbitset2)
+
+    if logical:
+        operation = function.intbitset_logical_function
+    else:
+        operation = function.intbitset_function
+
+    msg = "Testing %s(%s, %s)" % (
+        operation.__name__,
+        intbitset1,
+        intbitset2,
+    )
+
+
+
+    trailing1 = intbitset1.is_infinite()
+    trailing2 = intbitset2.is_infinite()
+
+    if function.inplace:
+        operation(intbitset1, intbitset2)
+        trailing1 = function.int_function(trailing1, trailing2) > 0
+        up_to = intbitset1.extract_finite_list() and max(intbitset1.extract_finite_list()) or -1
+    else:
+
+        intbitset3 = operation(intbitset1, intbitset2)
+        trailing3 = function.int_function(trailing1, trailing2) > 0
+        up_to = intbitset3.extract_finite_list() and max(intbitset3.extract_finite_list()) or -1
+
+    set1 = set(orig1.extract_finite_list(up_to))
+    set2 = set(orig2.extract_finite_list(up_to))
+
+    if function.inplace:
+        function.set_function(set1, set2)
+    else:
+        set3 = function.set_function(set1, set2)
+
+    if function.inplace:
+        assert set1 & set(intbitset1.extract_finite_list(up_to)) == set(
+            intbitset1.extract_finite_list(up_to)
+        ), (
+            "%s not equal to %s after executing %s(%s, %s)"
+            % (
+                set1,
+                set(intbitset1.extract_finite_list(up_to)),
+                operation.__name__,
+                repr(orig1),
+                repr(orig2),
+            ),
+        )
+        assert set1 | set(intbitset1.extract_finite_list(up_to)) == set1, (
+            "%s not equal to %s after executing %s(%s, %s)"
+            % (
+                set1,
+                set(intbitset1.extract_finite_list(up_to)),
+                operation.__name__,
+                repr(orig1),
+                repr(orig2),
+            ),
+        )
+        assert trailing1 == intbitset1.is_infinite(), (
+            "%s is not %s as it is supposed to be after executing %s(%s, %s)"
+            % (
+                intbitset1,
+                trailing1 and "infinite" or "finite",
+                operation.__name__,
+                repr(orig1),
+                repr(orig2),
+            ),
+        )
+    else:
+        # check_bitset(intbitset3, msg)
+        assert set3 & set(intbitset3.extract_finite_list(up_to)) == set(
+            intbitset3.extract_finite_list(up_to)
+        ), (
+            "%s not equal to %s after executing %s(%s, %s)"
+            % (
+                set3,
+                set(intbitset3.extract_finite_list(up_to)),
+                operation.__name__,
+                repr(orig1),
+                repr(orig2),
+            ),
+        )
+        assert set3 | set(intbitset3.extract_finite_list(up_to)) == set3, (
+            "%s not equal to %s after executing %s(%s, %s)"
+            % (
+                set3,
+                set(intbitset3.extract_finite_list(up_to)),
+                operation.__name__,
+                repr(orig1),
+                repr(orig2),
+            ),
+        )
+        assert trailing3 == intbitset3.is_infinite(), (
+            "%s is not %s as it is supposed to be after executing %s(%s, %s)"
+            % (
+                intbitset3,
+                trailing3 and "infinite" or "finite",
+                operation.__name__,
+                repr(orig1),
+                repr(orig2),
+            ),
+        )
+
+
+@pytest.mark.parametrize(
+    argnames="set1",
+    argvalues=TEST_SETS,
+)
+@pytest.mark.parametrize(argnames="set2", argvalues=TEST_SETS)
+@pytest.mark.parametrize(
+    argnames="function",
+    argvalues=FUNCTIONS,
+)
+def test_normal_set_ops(set1, set2, function):
+    check_functions_work(function, intbitset(set1), intbitset(set2))
+
+
+@pytest.mark.parametrize(
+    argnames="set1",
+    argvalues=TEST_SETS,
+)
+@pytest.mark.parametrize(argnames="set2", argvalues=TEST_SETS)
+@pytest.mark.parametrize(
+    argnames="function",
+    argvalues=FUNCTIONS,
+)
+def test_normal_set_logical_ops(set1, set2, function):
+    check_functions_work(function, intbitset(set1), intbitset(set2), True)
 
 
 @pytest.mark.parametrize(

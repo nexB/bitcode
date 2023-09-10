@@ -18,7 +18,7 @@ class intbitset:
         if isinstance(rhs, int):
             self.add(rhs)
         elif isinstance(rhs, intbitset):
-            self.bitset = rhs.bitset
+            self.bitset = rhs.bitset.copy()
         elif isinstance(rhs, Iterable):
             for value in rhs:
                 self.add(value)
@@ -39,6 +39,12 @@ class intbitset:
 
     def clear(self):
         self.bitset = set()
+
+    def is_infinite(self):
+        return False
+
+    def extract_finite_list(self, up_to=""):
+        return sorted(self.bitset)
 
     def copy(self):
         """ Return a shallow copy of a set. """
@@ -178,7 +184,7 @@ class intbitset:
         ans = "intbitset(["
         for char in sorted(self.bitset):
             ans += str(char) + ", "
-        ans.rstrip(", ")
+        ans = ans.rstrip(", ")
         ans += "])"
         return ans
 
@@ -208,8 +214,6 @@ class intbitset:
 
     def __sub__(self, other):
         new = intbitset()
-        if other == None:
-            raise TypeError("operands must be an intbitset")
         new.bitset = self.bitset - other.bitset
         return new
 
